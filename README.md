@@ -6,6 +6,9 @@
 
 目标系统：Linux x86_64，使用 Bash。仓库携带通用 amd64-v1 内核，不要求 AVX2。建议以普通用户安装。
 
+- https://github.com/MetaCubeX/mihomo
+- https://wiki.metacubex.one/startup/
+
 ```bash
 git clone <自己的仓库URL> clashctl-portable
 cd clashctl-portable
