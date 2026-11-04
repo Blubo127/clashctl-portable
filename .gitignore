@@ -1,0 +1,35 @@
+# 本机备份、订阅、令牌和个人安装参数，禁止提交
+/private/
+/.env.install.local
+/.env.local
+*.log
+*.pid
+*.db
+*.db-*
+*.lock
+*.bak
+.DS_Store
+.idea/
+.vscode/
+
+# 临时归档不提交；正式二进制包存于 vendor/，Web 面板随仓库携带
+/archives/*
+!/archives/dist.tar.gz
+/bin/
+
+# 运行数据不属于源码仓库
+config.yaml*
+runtime.yaml*
+temp.yaml*
+/resources/last-failed.*
+/resources/.fetch.*
+/resources/.header.*
+/resources/.download.*
+/resources/providers/
+/resources/ruleset/
+/resources/dist/
+/resources/profiles/*
+!/resources/profiles/.gitkeep
+
+# 只把默认 mixin.yaml 和空 profiles.yaml 放在源码里。
+# 个人运行目录应位于仓库之外，切勿用运行时文件覆盖这些模板。
