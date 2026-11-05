@@ -7,7 +7,7 @@ for arg in "$@"; do
 用法：bash install.sh [mihomo] [订阅 URL]
 
 默认安装到 ~/clashctl，支持从任意工作目录调用本脚本。
-使用仓库内置的 Linux x86_64 安装包，校验 SHA-256 后解压，不下载依赖。
+使用仓库内置的 Linux amd64-v1 安装包，校验 SHA-256 后解压，不下载依赖。
 可选设置写入源码目录的 .env.install.local，例如：
   CLASHCTL_HOME="$HOME/clashctl"
   CLASHCTL_SUB_URL="https://example.com/your-private-subscription"

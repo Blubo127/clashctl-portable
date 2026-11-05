@@ -45,6 +45,7 @@ CLASHCTL_SRC=$fixture
 parse_args mihomo
 [[ "$BIN_KERNEL" = "$runtime/bin/mihomo" ]]
 if parse_args --unknown >/dev/null 2>&1; then exit 1; fi
+if parse_args clash >/dev/null 2>&1; then exit 1; fi
 
 for forbidden in "$fixture" "$fixture/runtime" "$clashctl_test_dir"; do
     CLASHCTL_HOME=$forbidden
@@ -63,7 +64,7 @@ rm -- "$runtime"
 curl() { printf 'Unexpected network call\n' >&2; return 99; }
 uname() { case "$1" in -s) printf 'Linux\n' ;; -m) printf 'x86_64\n' ;; *) command uname "$@" ;; esac; }
 select_local_packages
-[[ "$CLASHCTL_PACKAGE_TIER" = v1 ]]
+[[ "$ZIP_KERNEL" = "$fixture/vendor/linux-amd64-v1/mihomo-linux-amd64-v1-test.gz" ]]
 verify_local_packages
 printf 'tampered\n' >>"$fixture/resources/geosite.dat"
 if prepare_zip >/dev/null 2>&1; then exit 1; fi
@@ -74,19 +75,12 @@ sed -i '/resources\/Country.mmdb/d' "$fixture/PACKAGES.sha256"
 if verify_local_packages >/dev/null 2>&1; then exit 1; fi
 cp "$clashctl_test_dir/checksums" "$fixture/PACKAGES.sha256"
 
-v2_flags='cx16 lahf_lm popcnt pni ssse3 sse4_1 sse4_2'
-v3_flags="$v2_flags avx avx2 bmi1 bmi2 f16c fma movbe xsave abm"
-_cpu_supports_level v1 'baseline'
-_cpu_supports_level v2 "$v2_flags"
-_cpu_supports_level v3 "$v3_flags"
-if _cpu_supports_level v2 'sse4_2 popcnt'; then exit 1; fi
-if _cpu_supports_level v3 "$v2_flags avx2 fma"; then exit 1; fi
-saved_cpu_function=$(declare -f _cpu_supports_level)
-_cpu_supports_level() { [ "$1" = v1 ]; }
-mv "$fixture/vendor/linux-amd64-v1" "$fixture/vendor/linux-amd64-v3"
+mv "$ZIP_YQ" "$clashctl_test_dir/missing-yq.tar.gz"
+if prepare_zip >/dev/null 2>&1; then exit 1; fi
+mv "$clashctl_test_dir/missing-yq.tar.gz" "$ZIP_YQ"
+mv "$ZIP_KERNEL" "$clashctl_test_dir/missing-kernel.gz"
 if select_local_packages >/dev/null 2>&1; then exit 1; fi
-mv "$fixture/vendor/linux-amd64-v3" "$fixture/vendor/linux-amd64-v1"
-eval "$saved_cpu_function"
+mv "$clashctl_test_dir/missing-kernel.gz" "$ZIP_KERNEL"
 uname() { case "$1" in -s) printf 'Linux\n' ;; -m) printf 'aarch64\n' ;; *) command uname "$@" ;; esac; }
 if select_local_packages >/dev/null 2>&1; then exit 1; fi
 uname() { case "$1" in -s) printf 'Linux\n' ;; -m) printf 'x86_64\n' ;; *) command uname "$@" ;; esac; }

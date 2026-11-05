@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Test only raw local-file import; no core, proxy, or network request is started.
+# Test local-file import and subscription recognition without starting a core.
 set -eo pipefail
 
 repo_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)
@@ -50,6 +50,27 @@ if _download_raw_config "$test_dir/missing.yaml" "file://$test_dir/not-found.yam
 fi
 if compgen -G "$CLASH_RESOURCES_DIR/.header.*" >/dev/null; then
     fail 'temporary response headers were not cleaned up'
+fi
+
+# Use the bundled YAML parser to distinguish native subscriptions from strings.
+mkdir -p -- "$test_dir/bin"
+tar -xzf "$repo_dir/vendor/linux-amd64-v1/yq_linux_amd64.tar.gz" -C "$test_dir/bin"
+BIN_YQ="$test_dir/bin/yq_linux_amd64"
+_errorcat() { printf '%s\n' "$*" >&2; return 1; }
+for contents in 'proxies: [{name: test, type: direct}]' 'proxy-providers: {test: {type: file, path: nodes.yaml}}'; do
+    printf '%s\n' "$contents" >"$test_dir/native.yaml"
+    _is_native_yaml_config "$test_dir/native.yaml" || fail 'a native subscription was not recognized'
+    _valid_sub_nodes "$test_dir/native.yaml" || fail 'a native subscription was rejected'
+done
+for contents in 'dHJvamFuOi8vdGVzdA==' 'proxies: []' 'proxy-providers: {}' 'proxies: scalar' 'proxies: ['; do
+    printf '%s\n' "$contents" >"$test_dir/invalid.yaml"
+    if _is_native_yaml_config "$test_dir/invalid.yaml"; then fail "invalid native detection: $contents"; fi
+    if _valid_sub_nodes "$test_dir/invalid.yaml" >"$test_dir/out" 2>"$test_dir/err"; then
+        fail "invalid node validation: $contents"
+    fi
+done
+if _valid_sub_nodes "$test_dir/absent.yaml" >"$test_dir/out" 2>"$test_dir/err"; then
+    fail 'a YAML read failure was accepted as valid nodes'
 fi
 
 printf 'Local config smoke tests passed.\n'

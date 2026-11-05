@@ -107,29 +107,6 @@ service_stop() {
     esac
 }
 
-service_restart() {
-    detect_service_manager
-    case "$service_manager" in
-    systemd)
-        systemctl restart "$CLASHCTL_KERNEL"
-        ;;
-    sysvinit)
-        service "$CLASHCTL_KERNEL" restart
-        ;;
-    openrc)
-        rc-service "$CLASHCTL_KERNEL" restart
-        ;;
-    runit)
-        sv restart "$CLASHCTL_KERNEL"
-        ;;
-    nohup | *)
-        service_stop >/dev/null 2>&1
-        sleep 0.1
-        service_start
-        ;;
-    esac
-}
-
 service_status() {
     detect_service_manager
     case "$service_manager" in
@@ -184,30 +161,6 @@ service_log() {
             return
         }
         less "$service_log_path"
-        ;;
-    esac
-}
-
-service_follow_log() {
-    detect_service_manager
-    case "$service_manager" in
-    systemd)
-        journalctl -u "$CLASHCTL_KERNEL" -q -f -n 0
-        ;;
-    *)
-        tail -f -n 0 "$service_log_path"
-        ;;
-    esac
-}
-
-service_read_log() {
-    detect_service_manager
-    case "$service_manager" in
-    systemd)
-        journalctl -u "$CLASHCTL_KERNEL" --no-pager
-        ;;
-    *)
-        cat "$service_log_path" 2>/dev/null
         ;;
     esac
 }

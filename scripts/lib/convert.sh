@@ -76,22 +76,18 @@ _is_html_response() {
 
 _is_native_yaml_config() {
     "$BIN_YQ" -e '
-      ((.proxies // []) | type == "!!seq" and length > 0) or
-      ((.proxy-providers // {}) | type == "!!map" and length > 0)
+      select(type == "!!map") |
+      (((.proxies | type) == "!!seq" and (.proxies | length) > 0) or
+       ((.proxy-providers | type) == "!!map" and (.proxy-providers | length) > 0))
     ' "$1" >/dev/null 2>&1
 }
 
 _valid_sub_nodes() {
-    local config=$1 count
-    count=$("$BIN_YQ" '
-      ((.proxies // []) | length) +
-      ((.proxy-providers // {}) | length)
-    ' "$config" 2>/dev/null) || return 0
-
-    [ "${count:-0}" -gt 0 ] || {
+    _is_native_yaml_config "$1" || {
         _errorcat "订阅未解析出任何节点，请检查订阅内容或转换器版本"
         return 1
     }
+    return 0
 }
 
 _download_raw_config() {

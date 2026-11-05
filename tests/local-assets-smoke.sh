@@ -94,18 +94,14 @@ grep -q '此配置需要 ASN.mmdb' "$test_dir/err" || fail 'missing local ASN gu
 grep -q 'unsupported protocol scheme' "$test_dir/err" || fail 'missing ASN data tried an online fallback'
 if compgen -G "$CLASH_RESOURCES_DIR/.validate.*" >/dev/null; then fail 'validation left temporary config files'; fi
 
-# UI and upgrade must not call a downloader or start an upgrade service.
+# Displaying the local UI must not call a downloader.
 . "$repo_dir/scripts/cmd/ui.sh"
-. "$repo_dir/scripts/cmd/upgrade.sh"
-curl() { fail 'UI/upgrade called curl'; }
-wget() { fail 'UI/upgrade called wget'; }
+curl() { fail 'UI called curl'; }
+wget() { fail 'UI called wget'; }
 _detect_ext_addr() { EXT_IP=127.0.0.1; EXT_PORT=9090; }
 service_is_active() { return 0; }
-service_start() { fail 'UI/upgrade attempted a service start'; }
+service_start() { fail 'UI attempted a service start'; }
 clashui >"$test_dir/ui.out"
 grep -q 'http://127.0.0.1:9090/ui' "$test_dir/ui.out" || fail 'UI omitted the local address'
-if clashupgrade >"$test_dir/out" 2>"$test_dir/err"; then fail 'online upgrade succeeded'; fi
-grep -q '本地内核包' "$test_dir/err" || fail 'upgrade omitted local-package guidance'
-clashupgrade --help >"$test_dir/out"
 
 printf 'Local asset smoke tests passed.\n'
