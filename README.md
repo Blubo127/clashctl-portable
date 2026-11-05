@@ -18,6 +18,14 @@ clashctl sub add --use '你的订阅URL'
 clashctl on
 ```
 
+```bash
+# 可能需要安装
+
+sudo apt update
+sudo apt install -y iproute2 net-tools
+sudo apt install fzf
+```
+
 默认安装到 `~/clashctl`，源码目录和安装目录必须分开。没有订阅也能完成安装；添加 URL 后会下载订阅配置并启用。`clashctl on` 为当前终端设置代理环境变量。
 
 **克隆完成后，程序依赖全部来自这个仓库。** 添加订阅以及使用代理仍需要访问自己的订阅服务器和节点。订阅中声明的远程 `rule-providers` / `proxy-providers` 仍按照该订阅获取；本仓库不会预先知道这些个性化资源。
